@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todologo — Maestros confiables, cuando los necesitas</title>
+<style>
+:root{
+  --azul:#1D4E89; --rojo:#D62828; --tinta:#222; --gris:#777;
+  --linea:#E8E8E8; --fondo:#FFFFFF; --suave:#F6F7F9; --verde:#2E8B57; --ambar:#E8A100;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--fondo);color:var(--tinta);line-height:1.5}
+header{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--linea);position:sticky;top:0;background:#fff;z-index:50}
+header img{height:38px;border-radius:7px}
+header .brand{font-weight:800;font-size:1.2rem;color:var(--azul)}
+header .brand span{color:var(--rojo)}
+.hero{text-align:center;padding:36px 20px 28px;background:var(--suave)}
+.hero img{width:220px;max-width:75%;height:auto}
+.hero h1{font-size:1.5rem;font-weight:800;margin:16px 0 6px;line-height:1.25}
+.hero p{color:var(--gris);max-width:420px;margin:0 auto;font-size:.95rem}
+.buscar{max-width:680px;margin:24px auto 0;padding:0 18px}
+.filtros{display:flex;gap:10px;flex-wrap:wrap}
+.filtros select{flex:1;min-width:150px;padding:12px 14px;border:1px solid var(--linea);border-radius:10px;font-size:1rem;background:#fff;color:var(--tinta)}
+.filtros select:focus{outline:none;border-color:var(--azul)}
+.solo-disp{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.9rem;color:var(--gris);cursor:pointer;user-select:none}
+.solo-disp input{width:18px;height:18px;accent-color:var(--azul)}
+.zona{max-width:680px;margin:22px auto;padding:0 18px}
+.conteo{font-size:.85rem;color:var(--gris);margin-bottom:12px}
+.tarjeta{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--linea);cursor:pointer}
+.tarjeta:hover{background:var(--suave)}
+.foto{width:56px;height:56px;border-radius:50%;flex-shrink:0;background:var(--suave);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--azul);overflow:hidden}
+.foto img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.info .nombre{font-weight:700;font-size:1.02rem}
+.info .oficio{font-size:.9rem;color:var(--azul);font-weight:600}
+.info .meta{font-size:.82rem;color:var(--gris);margin-top:2px}
+.info .est{font-size:.85rem;color:#444;margin-top:3px}
+.info .est b{color:var(--ambar)}
+.badges{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge.urg{background:#FDECEC;color:var(--rojo)}
+.badge.disp{background:#E7F4EE;color:var(--verde)}
+.disp{font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:5px;margin-top:5px}
+.disp .dot{width:8px;height:8px;border-radius:50%}
+.disp.si{color:var(--verde)} .disp.si .dot{background:var(--verde)}
+.disp.no{color:var(--gris)} .disp.no .dot{background:#ccc}
+.vacio{text-align:center;color:var(--gris);padding:40px 0;font-size:.92rem}
+.vacio b{color:var(--tinta)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.overlay.abierto{display:flex}
+.modal{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;max-height:90vh;overflow-y:auto;animation:subir .2s ease}
+@keyframes subir{from{transform:translateY(30px)}to{transform:translateY(0)}}
+.modal-top{padding:24px 20px 18px;text-align:center;border-bottom:1px solid var(--linea);position:relative}
+.cerrar{position:absolute;top:14px;right:16px;background:var(--suave);border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;color:var(--gris)}
+.modal-foto{width:76px;height:76px;border-radius:50%;margin:0 auto 10px;background:var(--suave);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:var(--azul);overflow:hidden}
+.modal-foto img{width:100%;height:100%;object-fit:cover}
+.modal-top h2{font-size:1.3rem}
+.modal-top .sub{color:var(--gris);font-size:.9rem;margin-top:2px}
+.modal-top .est{margin-top:6px;font-size:.9rem;color:#444}
+.modal-top .est b{color:var(--ambar)}
+.modal-cuerpo{padding:20px}
+.ficha{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.ficha-item{flex:1;min-width:130px;background:var(--suave);border-radius:10px;padding:10px 12px}
+.ficha-item .lab{font-size:.7rem;color:var(--gris);text-transform:uppercase;letter-spacing:.4px}
+.ficha-item .val{font-size:.9rem;font-weight:600;margin-top:2px}
+.ficha-item .val.urg{color:var(--rojo)}
+.ficha-item .val.no-urg{color:var(--gris)}
+.contacto{display:flex;gap:10px;margin-bottom:24px}
+.btn{flex:1;padding:14px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;color:#fff}
+.btn-wa{background:#25D366}
+.btn-tel{background:var(--azul)}
+.modal-cuerpo h4{margin-bottom:12px;color:var(--gris);text-transform:uppercase;letter-spacing:.5px;font-size:.78rem}
+.resena{padding:12px 0;border-bottom:1px solid var(--linea)}
+.resena:last-child{border-bottom:none}
+.resena-top{display:flex;justify-content:space-between;margin-bottom:4px}
+.resena-top .quien{font-weight:600;font-size:.9rem}
+.resena-top .est{font-size:.82rem;color:var(--ambar)}
+.resena .txt{font-size:.9rem;color:#444}
+/* intake */
+.intake label{display:block;font-size:.85rem;font-weight:600;margin:14px 0 6px}
+.intake input,.intake select,.intake textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);border-radius:10px;font-size:1rem;background:#fff;font-family:inherit}
+.intake textarea{resize:vertical;min-height:64px}
+.urg-opts{display:flex;gap:8px;flex-wrap:wrap}
+.urg-opts button{flex:1;min-width:90px;padding:11px 6px;border:1.5px solid var(--linea);background:#fff;border-radius:10px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--gris)}
+.urg-opts button.on{border-color:var(--rojo);background:#FDECEC;color:var(--rojo)}
+.aviso-911{margin-top:12px;background:#FFF8E6;border:1px solid #F2D98A;border-radius:10px;padding:11px 13px;font-size:.82rem;color:#7a5b00;line-height:1.45}
+.aviso-911 b{color:var(--rojo)}
+.intake .enviar{width:100%;margin-top:18px;background:#25D366;color:#fff;border:none;padding:15px;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer}
+.volver{background:none;border:none;color:var(--azul);font-size:.9rem;cursor:pointer;padding:0;margin-bottom:6px}
+/* signup */
+.alta{background:var(--suave);padding:36px 18px;margin-top:24px;border-top:1px solid var(--linea)}
+.alta-inner{max-width:520px;margin:0 auto;text-align:center}
+.alta h3{font-size:1.25rem;margin-bottom:6px}
+.alta h3 span{color:var(--rojo)}
+.alta p{color:var(--gris);margin-bottom:20px;font-size:.92rem}
+.form-alta{display:grid;gap:12px;text-align:left}
+.form-alta input,.form-alta select{padding:12px 14px;border-radius:10px;border:1px solid var(--linea);font-size:1rem;background:#fff}
+.form-alta .campo-lab{font-size:.82rem;font-weight:600;color:var(--gris);margin-bottom:-4px}
+.cobertura{display:flex;flex-wrap:wrap;gap:8px}
+.cobertura label{display:flex;align-items:center;gap:6px;font-size:.85rem;background:#fff;border:1px solid var(--linea);padding:8px 11px;border-radius:20px;cursor:pointer}
+.cobertura input{width:16px;height:16px;accent-color:var(--azul)}
+.btn-enviar{background:var(--rojo);color:#fff;font-weight:700;padding:14px;border:none;border-radius:10px;font-size:1rem;cursor:pointer;margin-top:4px}
+footer{text-align:center;padding:22px;font-size:.8rem;color:var(--gris)}
+footer b{color:var(--rojo)}
+@media(min-width:640px){.hero h1{font-size:1.8rem}.overlay{align-items:center}.modal{border-radius:18px;max-height:86vh}}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="Todologo">
+  <div class="brand">TODO<span>LOGO</span></div>
+</header>
+<section class="hero">
+  <img src="logo.png" alt="El Todologo, tu heroe">
+  <h1>Tu todólogo llega al rescate</h1>
+  <p>Maestros confiables cerca de ti — plomeros, electricistas, albañiles y más.</p>
+</section>
+<div class="buscar">
+  <div class="filtros">
+    <select id="f-oficio">
+      <option value="">Todos los oficios</option>
+      <option>Plomero</option><option>Electricista</option><option>Albañil</option>
+      <option>Carpintero</option><option>Pintor</option><option>Cerrajero</option>
+      <option>Jardinero</option><option>Técnico A/C</option>
+    </select>
+    <select id="f-zona">
+      <option value="">Toda la ciudad</option>
+      <option>Roma Norte</option><option>Condesa</option><option>Hipódromo</option>
+      <option>Juárez</option><option>Cuauhtémoc</option><option>Doctores</option>
+      <option>Guerrero</option><option>Centro</option>
+    </select>
+  </div>
+  <label class="solo-disp"><input type="checkbox" id="f-disp"> Solo disponibles ahora</label>
+</div>
+<div class="zona">
+  <div class="conteo" id="conteo"></div>
+  <div id="lista"></div>
+</div>
+<section class="alta" id="alta">
+  <div class="alta-inner">
+    <h3>¿Eres maestro? <span>Únete gratis.</span></h3>
+    <p>Recibe clientes de tu zona. Sin costo.</p>
+    <div class="form-alta">
+      <input type="text" id="a-nombre" placeholder="Tu nombre">
+      <select id="a-oficio">
+        <option value="">¿Cuál es tu oficio?</option>
+        <option>Plomero</option><option>Electricista</option><option>Albañil</option>
+        <option>Carpintero</option><option>Pintor</option><option>Cerrajero</option>
+        <option>Jardinero</option><option>Técnico A/C</option>
+      </select>
+      <input type="tel" id="a-tel" placeholder="WhatsApp (10 dígitos)">
+      <select id="a-zona">
+        <option value="">¿Cuál es tu colonia base?</option>
+        <option>Roma Norte</option><option>Condesa</option><option>Hipódromo</option>
+        <option>Juárez</option><option>Cuauhtémoc</option><option>Doctores</option>
+        <option>Guerrero</option><option>Centro</option>
+      </select>
+      <div class="campo-lab">¿Qué colonias cubres?</div>
+      <div class="cobertura" id="a-cobertura">
+        <label><input type="checkbox" value="Roma Norte">Roma Norte</label>
+        <label><input type="checkbox" value="Condesa">Condesa</label>
+        <label><input type="checkbox" value="Hipódromo">Hipódromo</label>
+        <label><input type="checkbox" value="Juárez">Juárez</label>
+        <label><input type="checkbox" value="Cuauhtémoc">Cuauhtémoc</label>
+        <label><input type="checkbox" value="Doctores">Doctores</label>
+        <label><input type="checkbox" value="Guerrero">Guerrero</label>
+        <label><input type="checkbox" value="Centro">Centro</label>
+      </div>
+      <div class="campo-lab">¿Atiendes urgencias?</div>
+      <select id="a-urgencia">
+        <option value="">Elige una opción</option>
+        <option value="Llego en ~30 min">Sí — llego en ~30 min</option>
+        <option value="Llego en ~1 hora">Sí — llego en ~1 hora</option>
+        <option value="Mismo día">Sí — el mismo día</option>
+        <option value="Solo agendado">No — solo trabajos agendados</option>
+      </select>
+      <button class="btn-enviar" onclick="registrar()">Quiero unirme →</button>
+    </div>
+  </div>
+</section>
+<footer>Hecho en CDMX · <b>Todologo</b> — el todólogo</footer>
+<div class="overlay" id="overlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal" id="modal"></div>
+</div>
+<script>
+/* ============================================================
+   TUS MAESTROS — EDITA AQUI
+   cobertura: colonias que cubre · urgencia: su capacidad de urgencia
+   ============================================================ */
+const MAESTROS = [
+  { nombre:"Juan Ramírez", oficio:"Plomero", zona:"Roma Norte",
+    tel:"525511223344", whatsapp:"525511223344",
+    estrellas:4.8, trabajos:47, anios:12, disponible:true, foto:"",
+    cobertura:["Roma Norte","Condesa","Juárez","Hipódromo"], urgencia:"Llego en ~1 hora",
+    resenas:[
+      {quien:"Ana L.", est:5, txt:"Llegó rápido, arregló la fuga y dejó todo limpio."},
+      {quien:"Carlos M.", est:5, txt:"Muy profesional y precio justo."}
+    ]},
+  { nombre:"Pedro Sánchez", oficio:"Electricista", zona:"Condesa",
+    tel:"525522334455", whatsapp:"525522334455",
+    estrellas:4.9, trabajos:83, anios:15, disponible:true, foto:"",
+    cobertura:["Condesa","Roma Norte","Hipódromo"], urgencia:"Llego en ~30 min",
+    resenas:[
+      {quien:"Luis H.", est:5, txt:"Instaló todo el cableado sin problema. Excelente."},
+      {quien:"Marta G.", est:5, txt:"Honesto y muy capaz."}
+    ]},
+  { nombre:"Miguel Torres", oficio:"Albañil", zona:"Guerrero",
+    tel:"525533445566", whatsapp:"525533445566",
+    estrellas:4.6, trabajos:31, anios:20, disponible:false, foto:"",
+    cobertura:["Guerrero","Centro","Doctores"], urgencia:"Solo agendado",
+    resenas:[
+      {quien:"Roberto V.", est:5, txt:"Remodeló mi baño completo. Trabajo de calidad."}
+    ]},
+  { nombre:"José Hernández", oficio:"Carpintero", zona:"Juárez",
+    tel:"525544556677", whatsapp:"525544556677",
+    estrellas:4.7, trabajos:25, anios:8, disponible:true, foto:"",
+    cobertura:["Juárez","Roma Norte","Cuauhtémoc"], urgencia:"Mismo día",
+    resenas:[
+      {quien:"Diana F.", est:5, txt:"Me hizo un clóset a la medida hermoso."}
+    ]},
+  { nombre:"Raúl Mendoza", oficio:"Técnico A/C", zona:"Roma Norte",
+    tel:"525555667788", whatsapp:"525555667788",
+    estrellas:4.5, trabajos:19, anios:6, disponible:true, foto:"",
+    cobertura:["Roma Norte","Condesa","Doctores"], urgencia:"Llego en ~1 hora",
+    resenas:[
+      {quien:"Pablo S.", est:4, txt:"Reparó mi minisplit el mismo día."}
+    ]}
+];
+/* FIN DE LA LISTA */
+
+/* 👉 TU WhatsApp (52 + 10 dígitos) — aquí llegan los registros de maestros: */
+const TU_WHATSAPP="525500000000";
+
+function estrellasHTML(n){const l=Math.round(n);return "★".repeat(l)+"☆".repeat(5-l);}
+function inicial(n){return n.trim()[0].toUpperCase();}
+function fotoHTML(m){return m.foto?'<img src="'+m.foto+'" alt="'+m.nombre+'">':inicial(m.nombre);}
+function tomaUrgencias(m){return m.urgencia && m.urgencia!=="Solo agendado";}
+
+function render(){
+  const oficio=document.getElementById('f-oficio').value;
+  const zona=document.getElementById('f-zona').value;
+  const soloDisp=document.getElementById('f-disp').checked;
+  let lista=MAESTROS.filter(m=>{
+    if(oficio&&m.oficio!==oficio)return false;
+    // zona: coincide su base O su cobertura incluye esa colonia
+    if(zona && m.zona!==zona && !(m.cobertura||[]).includes(zona))return false;
+    if(soloDisp&&!m.disponible)return false;
+    return true;
+  });
+  lista.sort((a,b)=>(b.disponible-a.disponible)||(b.estrellas-a.estrellas));
+  document.getElementById('conteo').textContent=lista.length+(lista.length===1?" maestro":" maestros");
+  const c=document.getElementById('lista');
+  if(!lista.length){c.innerHTML='<div class="vacio"><b>No hay maestros con esos filtros.</b><br>Prueba ampliar la zona o el oficio.</div>';return;}
+  c.innerHTML=lista.map(m=>{
+    const i=MAESTROS.indexOf(m);
+    const urgBadge=tomaUrgencias(m)?'<span class="badge urg">⚡ Atiende urgencias</span>':'';
+    return '<div class="tarjeta" onclick="abrir('+i+')">'+
+      '<div class="foto">'+fotoHTML(m)+'</div>'+
+      '<div class="info">'+
+        '<div class="nombre">'+m.nombre+'</div>'+
+        '<div class="oficio">'+m.oficio+'</div>'+
+        '<div class="meta">'+m.zona+' · '+m.anios+' años</div>'+
+        '<div class="est"><b>'+estrellasHTML(m.estrellas)+'</b> '+m.estrellas+' · '+m.trabajos+' trabajos</div>'+
+        '<div class="badges">'+urgBadge+'</div>'+
+        '<div class="disp '+(m.disponible?'si':'no')+'"><span class="dot"></span>'+(m.disponible?'Disponible ahora':'Ocupado')+'</div>'+
+      '</div></div>';
+  }).join('');
+}
+
+function abrir(i){
+  const m=MAESTROS[i];
+  const r=m.resenas.map(x=>'<div class="resena"><div class="resena-top"><span class="quien">'+x.quien+'</span><span class="est">'+estrellasHTML(x.est)+'</span></div><div class="txt">'+x.txt+'</div></div>').join('');
+  const urgVal=tomaUrgencias(m)
+    ?'<div class="val urg">⚡ '+m.urgencia+'</div>'
+    :'<div class="val no-urg">Solo trabajos agendados</div>';
+  document.getElementById('modal').innerHTML=
+    '<div class="modal-top">'+
+      '<button class="cerrar" onclick="cerrarModal()">✕</button>'+
+      '<div class="modal-foto">'+fotoHTML(m)+'</div>'+
+      '<h2>'+m.nombre+'</h2>'+
+      '<div class="sub">'+m.oficio+' · '+m.zona+' · '+m.anios+' años</div>'+
+      '<div class="est"><b>'+estrellasHTML(m.estrellas)+'</b> '+m.estrellas+' · '+m.trabajos+' trabajos</div>'+
+    '</div>'+
+    '<div class="modal-cuerpo">'+
+      '<div class="ficha">'+
+        '<div class="ficha-item"><div class="lab">Cobertura</div><div class="val">'+(m.cobertura||[m.zona]).join(', ')+'</div></div>'+
+        '<div class="ficha-item"><div class="lab">Urgencias</div>'+urgVal+'</div>'+
+      '</div>'+
+      '<div class="contacto">'+
+        '<button class="btn btn-wa" onclick="intake('+i+')">💬 Contactar</button>'+
+        '<a class="btn btn-tel" href="tel:+'+m.tel+'">📞 Llamar</a>'+
+      '</div>'+
+      '<h4>Reseñas</h4>'+
+      (r||'<p style="color:var(--gris);font-size:.9rem">Aún sin reseñas.</p>')+
+    '</div>';
+  abrirOverlay();
+}
+
+/* INTAKE: assess the job before handing off to WhatsApp */
+let urgenciaCliente="";
+function intake(i){
+  const m=MAESTROS[i];
+  urgenciaCliente="";
+  document.getElementById('modal').innerHTML=
+    '<div class="modal-top">'+
+      '<button class="cerrar" onclick="cerrarModal()">✕</button>'+
+      '<h2>Contactar a '+m.nombre+'</h2>'+
+      '<div class="sub">Cuéntale qué necesitas para que te responda rápido</div>'+
+    '</div>'+
+    '<div class="modal-cuerpo intake">'+
+      '<button class="volver" onclick="abrir('+i+')">← Regresar al perfil</button>'+
+      '<label>¿Qué necesitas?</label>'+
+      '<textarea id="i-desc" placeholder="Ej. Tengo una fuga debajo del fregadero"></textarea>'+
+      '<label>¿Qué tan urgente es?</label>'+
+      '<div class="urg-opts" id="i-urg">'+
+        '<button onclick="setUrg(this,\'🔴 Urgente (hoy mismo)\')">🔴 Urgente (hoy)</button>'+
+        '<button onclick="setUrg(this,\'🟡 Esta semana\')">🟡 Esta semana</button>'+
+        '<button onclick="setUrg(this,\'🟢 Sin prisa\')">🟢 Sin prisa</button>'+
+      '</div>'+
+      '<div class="aviso-911">⚠️ ¿Fuga de gas, olor fuerte o riesgo eléctrico? Por seguridad, marca al <b>911</b> antes de contactar a un maestro.</div>'+
+      '<label>¿En qué colonia?</label>'+
+      '<select id="i-col">'+
+        '<option value="">Elige tu colonia</option>'+
+        '<option>Roma Norte</option><option>Condesa</option><option>Hipódromo</option>'+
+        '<option>Juárez</option><option>Cuauhtémoc</option><option>Doctores</option>'+
+        '<option>Guerrero</option><option>Centro</option><option>Otra</option>'+
+      '</select>'+
+      '<button class="enviar" onclick="enviarWA('+i+')">💬 Enviar por WhatsApp</button>'+
+    '</div>';
+  abrirOverlay();
+}
+function setUrg(btn,val){
+  urgenciaCliente=val;
+  document.querySelectorAll('#i-urg button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function enviarWA(i){
+  const m=MAESTROS[i];
+  const desc=document.getElementById('i-desc').value.trim();
+  const col=document.getElementById('i-col').value;
+  if(!desc){alert('Cuéntale brevemente qué necesitas.');return;}
+  if(!urgenciaCliente){alert('Elige qué tan urgente es.');return;}
+  if(!col){alert('Elige tu colonia.');return;}
+  const msg=
+    'Hola '+m.nombre+', te encontré en Todologo 🦸\n\n'+
+    'Necesito un '+m.oficio.toLowerCase()+':\n'+
+    '📋 Detalle: '+desc+'\n'+
+    '⏱️ Urgencia: '+urgenciaCliente+'\n'+
+    '📍 Colonia: '+col;
+  window.open('https://wa.me/'+m.whatsapp+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+function abrirOverlay(){document.getElementById('overlay').classList.add('abierto');document.body.style.overflow='hidden';}
+function cerrarModal(){document.getElementById('overlay').classList.remove('abierto');document.body.style.overflow='';}
+
+function registrar(){
+  const n=document.getElementById('a-nombre').value.trim();
+  const o=document.getElementById('a-oficio').value;
+  const t=document.getElementById('a-tel').value.trim();
+  const z=document.getElementById('a-zona').value;
+  const u=document.getElementById('a-urgencia').value;
+  const cob=Array.from(document.querySelectorAll('#a-cobertura input:checked')).map(c=>c.value);
+  if(!n||!o||!t||!z||!u||!cob.length){alert('Por favor llena todos los campos, incluyendo colonias y urgencias.');return;}
+  const msg=
+    '🦸 NUEVO MAESTRO TODOLOGO\n\n'+
+    'Nombre: '+n+'\n'+
+    'Oficio: '+o+'\n'+
+    'WhatsApp: '+t+'\n'+
+    'Colonia base: '+z+'\n'+
+    'Cobertura: '+cob.join(', ')+'\n'+
+    'Urgencias: '+u;
+  window.open('https://wa.me/'+TU_WHATSAPP+'?text='+encodeURIComponent(msg),'_blank');
+  alert('¡Gracias '+n+'! Se abrió WhatsApp para terminar tu registro.');
+}
+
+document.getElementById('f-oficio').addEventListener('change',render);
+document.getElementById('f-zona').addEventListener('change',render);
+document.getElementById('f-disp').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
